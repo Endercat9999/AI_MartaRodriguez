@@ -68,4 +68,13 @@ public class EnemyAI : MonoBehaviour
     {
         _AIAgent.destination = _patronPoints[Random.Range(0, _patronPoints.Length)].position;
     }
+
+    /*void OnDrawGizmos()
+    {
+        foreach(Transform point in _patronPoints)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawingSphere(point.position, 1);
+        }
+    }*/
 }
