@@ -22,17 +22,22 @@ public class EnemyAI : MonoBehaviour
     private NavMeshAgent _AIAgent;
 
     private Transform _playerTransform;
-
+    //cosas patrulla
     [SerializeField] Transform[] _patronPoints;
 
     [SerializeField] Vector2 _patrolAreaSize = new Vector2(5, 5);
     [SerializeField] Transform _patrolAreaCenter;
 
+    //cosas detecion
     [SerializeField] float _visionRange = 20;
 
     [SerializeField] float _visionAngle = 120;
 
     private Vector3 _PlayerLastPosition; 
+    // cosas busqueda
+    float _searchTimer;
+    float _searchWaitTime =15;
+    float _serchRadius = 10;
 
     void Awake()
     {
@@ -85,8 +90,9 @@ public class EnemyAI : MonoBehaviour
     {
         if(!OnRange())
         {
-            currentState = EnemyState.Patrolling;
+            currentState = EnemyState.Searching;
         }
+        
 
         _AIAgent.destination = _playerTransform.position;
 
@@ -95,7 +101,43 @@ public class EnemyAI : MonoBehaviour
 
     void Search()
     {
+        if(OnRange())
+        {
+            currentState = EnemyState.Chasing; 
+        }
 
+        _searchTimer += Time.deltaTime;
+
+        if(_searchTimer < _searchWaitTime)
+        {
+            if(_AIAgent.remainingDistance < 0.5f)
+            {
+                Vector3 randomPoint;
+                if(RandomSearchPoints(_PlayerLastPosition, _serchRadius, out randomPoint))
+                {
+                    _AIAgent.destination = randomPoint;
+                }
+            }
+        }
+        else
+        {
+            currentState = EnemyState.Patrolling;
+        }
+    }
+
+    bool RandomSearchPoints(Vector3 center, float radius, out Vector3 point)
+    {
+        Vector3 randomPoint = center + Random.insideUnitSphere * radius; 
+       
+       NavMeshHit hit;
+       if(NavMesh.SamplePosition(randomPoint, out hit, 4, NavMesh.AllAreas))
+       {
+            point = hit.position;
+            return true;
+       }
+
+       point = Vector3.zero;
+       return false; 
     }
 
     bool OnRange()
