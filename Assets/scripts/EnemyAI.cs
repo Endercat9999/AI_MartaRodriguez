@@ -100,6 +100,11 @@ public class EnemyAI : MonoBehaviour
         float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
         float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
 
+        if(distanceToPlayer > _visionRange)
+        {
+            return false;
+        }
+
         if(distanceToPlayer < _visionRange)
         {
             if(angleToPlayer < _visionAngle * 0.5f)
