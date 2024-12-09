@@ -11,7 +11,9 @@ public class EnemyAI : MonoBehaviour
 
         Patrolling,
 
-        Chasing
+        Chasing,
+
+        Searching
 
     }
 
@@ -24,6 +26,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] Transform[] _patronPoints;
 
     [SerializeField] float _visionRange = 20;
+
+    [SerializeField] float _visionAngle = 120;
 
     void Awake()
     {
@@ -51,6 +55,10 @@ public class EnemyAI : MonoBehaviour
 
             case EnemyState.Chasing:
                 Chase();
+            break;
+
+            case EnemyState.Searching:
+                Search();
             break;
         }
     }
@@ -80,19 +88,34 @@ public class EnemyAI : MonoBehaviour
 
     }
 
+    void Search()
+    {
+
+    }
+
     bool OnRange()
     {
+
+        Vector3 directionToPlayer = _playerTransform.position - transform.position; 
+        float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
         float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
 
         if(distanceToPlayer < _visionRange)
         {
-            return true;
-
+            if(angleToPlayer < _visionAngle * 0.5f)
+            {
+                return true; 
+            }
+            else
+            {
+                return false; 
+            }
         }
         else
         {
             return false; 
         }
+        
     }
 
     void SetRandomPatronPoint()
@@ -111,5 +134,13 @@ public class EnemyAI : MonoBehaviour
 
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, _visionRange);
+
+        Gizmos.color = Color.yellow;
+
+        Vector3 fovLine1 = Quaternion.AngleAxis(_visionAngle * 0.5f, transform.up) * transform.forward * _visionRange;
+        Vector3 fovLine2 = Quaternion.AngleAxis(-_visionAngle * 0.5f, transform.up) * transform.forward * _visionRange;
+
+        Gizmos.DrawLine(transform.position, transform.position + fovLine1);
+        Gizmos.DrawLine(transform.position, transform.position + fovLine2);
     }
 }
