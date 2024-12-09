@@ -19,11 +19,16 @@ public class EnemyAI : MonoBehaviour
 
     private NavMeshAgent _AIAgent;
 
+    private Transform _playerTransform;
+
     [SerializeField] Transform[] _patronPoints;
+
+    [SerializeField] float _visionRange = 20;
 
     void Awake()
     {
         _AIAgent = GetComponent<NavMeshAgent>();
+        _playerTransform = GameObject.FindWithTag("Player").transform;
     }
 
 
@@ -52,6 +57,11 @@ public class EnemyAI : MonoBehaviour
 
     void Patrol()
     {
+        if(OnRange())
+        {
+            currentState = EnemyState.Chasing; 
+        }
+
         if(_AIAgent.remainingDistance < 0.5f)
         {
             SetRandomPatronPoint();
@@ -60,8 +70,29 @@ public class EnemyAI : MonoBehaviour
 
     void Chase()
     {
+        if(!OnRange())
+        {
+            currentState = EnemyState.Patrolling;
+        }
+
+        _AIAgent.destination = _playerTransform.position;
 
 
+    }
+
+    bool OnRange()
+    {
+        float distanceToPlayer = Vector3.Distance(transform.position, _playerTransform.position);
+
+        if(distanceToPlayer < _visionRange)
+        {
+            return true;
+
+        }
+        else
+        {
+            return false; 
+        }
     }
 
     void SetRandomPatronPoint()
@@ -69,12 +100,16 @@ public class EnemyAI : MonoBehaviour
         _AIAgent.destination = _patronPoints[Random.Range(0, _patronPoints.Length)].position;
     }
 
-    /*void OnDrawGizmos()
+
+    void OnDrawGizmos()
     {
         foreach(Transform point in _patronPoints)
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawingSphere(point.position, 1);
+            Gizmos.DrawWireSphere(point.position, 1);
         }
-    }*/
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, _visionRange);
+    }
 }
